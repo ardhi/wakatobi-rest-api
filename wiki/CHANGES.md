@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-05-22
+
+- [2.11.1] Bug fix in ```serve-route.js```
+
 ## 2026-04-25
 
 - [2.11.0] Change options to format value using the new key set by dobo
