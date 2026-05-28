@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-05-28
+
+- [2.12.0] Change hooks to be written in one ```hook.js``` file
+
 ## 2026-05-22
 
 - [2.11.1] Bug fix in ```serve-route.js```
