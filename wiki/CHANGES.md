@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-06-10
+
+- [2.13.0] Remove route redirects because now directly handled by ```waibu```
+
 ## 2026-05-28
 
 - [2.12.0] Change hooks to be written in one ```hook.js``` file

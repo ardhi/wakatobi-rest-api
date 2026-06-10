@@ -20,7 +20,7 @@ const boot = {
   handler: async function (prefix) {
     const { importPkg, eachPlugins, importModule, runHook } = this.app.bajo
     const { fastGlob } = this.app.lib
-    const { getPluginPrefix } = this.app.waibu
+    const { getPluginPrefix, isRouteDisabled } = this.app.waibu
     const [bodyParser, accepts] = await importPkg('waibu:@fastify/formbody', 'waibu:@fastify/accepts')
     const routeHook = await importModule('waibu:/lib/webapp-scope/route-hook.js')
     const handleMultipart = await importModule('waibu:/lib/webapp-scope/handle-multipart-body.js')
@@ -68,11 +68,7 @@ const boot = {
           if (!Array.isArray(mods)) mods = [mods]
           for (const mod of mods) {
             const fullPath = appPrefix === '/' ? mod.url : (appPrefix + mod.url)
-            const isRouteDisabled = await importModule('waibu:/lib/webapp-scope/is-route-disabled.js')
-            if (await isRouteDisabled.call(this, fullPath, mod.method, me.config.disabled)) {
-              this.log.warn('routeDisabled%s%s', `${prefix}${fullPath}`, mod.method)
-              continue
-            }
+            if (isRouteDisabled(`${prefix === '' ? '' : `/${prefix}`}${fullPath}`)) continue
             const rpath = await reroutedPath.call(this, fullPath, me.config.rerouted)
             if (me.config.format.asExt) mod.url = formatExt(mod.url)
             if (rpath) {
