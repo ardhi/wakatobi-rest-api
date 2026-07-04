@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-07-04
+
+- [2.14.0] Reorganize projects to reduce boot time
+
 ## 2026-06-10
 
 - [2.13.0] Remove route redirects because now directly handled by ```waibu```

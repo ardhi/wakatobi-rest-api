@@ -1,13 +1,4 @@
 import path from 'path'
-import decorate from '../../lib/decorate.js'
-import routeByModelBuilder from '../../lib/route-by-model-builder.js'
-import routeByVerb from '../../lib/route-by-verb.js'
-import notFoundHandler from '../../lib/not-found.js'
-import errorHandler from '../../lib/error.js'
-import subApp from '../../lib/sub-app.js'
-import handleResponse from '../../lib/handle-response.js'
-
-const routeActions = { routeByModelBuilder, routeByVerb }
 
 function formatExt (item) {
   return item + '.:format'
@@ -15,26 +6,19 @@ function formatExt (item) {
 
 const boot = {
   level: 10,
-  notFoundHandler,
-  errorHandler,
   handler: async function (prefix) {
     const { importPkg, eachPlugins, importModule, runHook } = this.app.bajo
     const { fastGlob } = this.app.lib
     const { getPluginPrefix, isRouteDisabled } = this.app.waibu
     const [bodyParser, accepts] = await importPkg('waibu:@fastify/formbody', 'waibu:@fastify/accepts')
-    const routeHook = await importModule('waibu:/lib/webapp-scope/route-hook.js')
-    const handleMultipart = await importModule('waibu:/lib/webapp-scope/handle-multipart-body.js')
-    const handleXmlBody = await importModule('waibu:/lib/handle-xml-body.js')
-    const handleCors = await importModule('waibu:/lib/webapp-scope/handle-cors.js')
-    const handleHelmet = await importModule('waibu:/lib/webapp-scope/handle-helmet.js')
-    const handleCompress = await importModule('waibu:/lib/webapp-scope/handle-compress.js')
-    const handleRateLimit = await importModule('waibu:/lib/webapp-scope/handle-rate-limit.js')
-    const reroutedPath = await importModule('waibu:/lib/webapp-scope/rerouted-path.js')
+    const {
+      routeHook, handleMultipartBody, handleXmlBody, handleCors, handleHelmet, handleCompress,
+      handleRateLimit, reroutedPath
+    } = await importModule('waibu:/lib/webapp.js', { asDefaultImport: false })
 
     const pathPrefix = `${this.ns}/route`
     await this.docSchemaGeneral()
     await routeHook.call(this, this.ns)
-    await decorate.call(this)
     if (this.config.format.supported.includes('xml')) {
       await handleXmlBody.call(this, this.config.format.xml.bodyParser)
     }
@@ -43,9 +27,9 @@ const boot = {
     await handleRateLimit.call(this, this.config.rateLimit)
     await handleCors.call(this, this.config.cors)
     await handleHelmet.call(this, this.config.helmet)
-    await handleMultipart.call(this, this.config.multipart)
+    await handleMultipartBody.call(this, this.config.multipart)
     await handleCompress.call(this, this.config.compress)
-    await handleResponse.call(this)
+    await this._handleResponse()
     await runHook(`${this.ns}:beforeCreateRoutes`, this.webAppCtx)
     const actions = ['find', 'get', 'create', 'update', 'remove']
     if (this.config.enablePatch) actions.push('replace')
@@ -63,8 +47,10 @@ const boot = {
       await me.webAppCtx.register(async (appCtx) => {
         for (const file of files) {
           const base = path.basename(file, path.extname(file))
-          const action = base === 'model-builder' ? 'routeByModelBuilder' : 'routeByVerb'
-          let mods = await routeActions[action].call(me, { file, appCtx, dir, pathPrefix, ns, alias, parent: me.ns })
+          let mods
+          if (base === 'model-builder') mods = await me._routeByModelBuilder({ file, dir, pathPrefix, ns, parent: me.ns })
+          else mods = await me._routeByVerb({ file, appCtx, dir, pathPrefix, ns, alias, parent: me.ns })
+
           if (!Array.isArray(mods)) mods = [mods]
           for (const mod of mods) {
             const fullPath = appPrefix === '/' ? mod.url : (appPrefix + mod.url)
@@ -82,7 +68,7 @@ const boot = {
       }, { prefix: appPrefix })
     })
     await runHook(`${this.ns}:afterCreateRoutes`, this.webAppCtx)
-    await subApp.call(this)
+    await this._handleSubApp()
   }
 }
 
