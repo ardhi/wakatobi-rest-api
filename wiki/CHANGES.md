@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-07-08
+
+- [2.14.1] Bug fix in `boot.js`
+
 ## 2026-07-04
 
 - [2.14.0] Reorganize projects to reduce boot time
