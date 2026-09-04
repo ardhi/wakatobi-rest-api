@@ -492,7 +492,7 @@ async function factory (pkgName) {
       const { readConfig } = this.app.bajo
       const { pascalCase } = this.app.lib.aneka
       const { methodMap, getParams } = this.app.waibuDb
-      const { isFunction, camelCase, omit, merge, keys, filter } = this.app.lib._
+      const { isFunction, omit, merge, keys, filter } = this.app.lib._
       const builder = await readConfig(file, { ns, ignoreError: true })
       builder.disabled = builder.disabled ?? []
       let url = path.dirname(file).replace(`${dir}/extend/${pathPrefix}`, '').replaceAll('@', ':')
@@ -553,7 +553,7 @@ async function factory (pkgName) {
         url: `${url}/stat/:stat`,
         handler: async function (req, reply) {
           if (!supported.includes(req.params.stat)) throw me.error('_notFound')
-          const helper = me.app.waibuDb[camelCase(`create ${req.params.stat}`)]
+          const helper = me.app.waibuDb[req.params.stat]
           if (!helper) throw me.error('_notFound')
           const options = { queryHandler: builder.queryHandler }
           const model = builder.model.startsWith(':') ? pascalCase(req.params[builder.model.slice(1)]) : builder.model

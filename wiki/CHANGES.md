@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-09-05
+
+- [2.14.2] Bug fix in `_routeByModelBuilder()` for aggregate/histogram endpoint
+
 ## 2026-07-08
 
 - [2.14.1] Bug fix in `boot.js`
